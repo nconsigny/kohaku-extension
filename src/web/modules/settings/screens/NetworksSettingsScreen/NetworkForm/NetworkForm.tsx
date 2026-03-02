@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Pressable, View, ViewStyle } from 'react-native'
 
 import { getFeatures } from '@ambire-common/libs/networks/networks'
-import { isColibriSupportedChain } from '@ambire-common/services/provider'
+import { isColibriSupportedChain, isObliviousSupportedChain } from '@ambire-common/services/provider'
 import { isValidURL } from '@ambire-common/services/validations'
 import CopyIcon from '@common/assets/svg/CopyIcon'
 import Button from '@common/components/Button'
@@ -74,6 +74,7 @@ type NetworkFormValues = {
   explorerUrl: string
   coingeckoPlatformId: string
   coingeckoNativeAssetId: string
+  obliviousProofServerUrl: string
 }
 
 type ControllerRenderArgs = {
@@ -271,7 +272,8 @@ const NetworkForm = ({
       nativeAssetName: '',
       explorerUrl: '',
       coingeckoPlatformId: '',
-      coingeckoNativeAssetId: ''
+      coingeckoNativeAssetId: '',
+      obliviousProofServerUrl: ''
     },
     values: {
       name: selectedNetwork?.name || '',
@@ -285,7 +287,8 @@ const NetworkForm = ({
       nativeAssetName: selectedNetwork?.nativeAssetName || '',
       explorerUrl: selectedNetwork?.explorerUrl || '',
       coingeckoPlatformId: (selectedNetwork?.platformId as string) || '',
-      coingeckoNativeAssetId: (selectedNetwork?.nativeAssetId as string) || ''
+      coingeckoNativeAssetId: (selectedNetwork?.nativeAssetId as string) || '',
+      obliviousProofServerUrl: selectedNetwork?.obliviousProofServerUrl || ''
     }
   })
   const [rpcUrls, setRpcUrls] = useState(selectedNetwork?.rpcUrls || [])
@@ -305,6 +308,15 @@ const NetworkForm = ({
     try {
       if (!chainIdValue) return false
       return isColibriSupportedChain(BigInt(chainIdValue))
+    } catch {
+      return false
+    }
+  }, [chainIdValue])
+
+  const canUseOblivious = useMemo(() => {
+    try {
+      if (!chainIdValue) return false
+      return isObliviousSupportedChain(BigInt(chainIdValue))
     } catch {
       return false
     }
@@ -451,7 +463,8 @@ const NetworkForm = ({
           name !== 'rpcUrl' &&
           name !== 'consensusRpcUrl' &&
           name !== 'heliosCheckpoint' &&
-          name !== 'proverRpcUrl'
+          name !== 'proverRpcUrl' &&
+          name !== 'obliviousProofServerUrl'
         ) {
             setError(name, { type: 'custom-error', message: 'Field is required' })
             return
@@ -561,6 +574,30 @@ const NetworkForm = ({
           clearErrors('heliosCheckpoint')
         }
 
+        if (name === 'obliviousProofServerUrl') {
+          if (!value.obliviousProofServerUrl) {
+            clearErrors('obliviousProofServerUrl')
+            return
+          }
+          try {
+            const url = new URL(value.obliviousProofServerUrl)
+            if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+              setError('obliviousProofServerUrl', {
+                type: 'custom-error',
+                message: 'URL must start with http:// or https://'
+              })
+              return
+            }
+          } catch {
+            setError('obliviousProofServerUrl', {
+              type: 'custom-error',
+              message: 'Invalid URL'
+            })
+            return
+          }
+          clearErrors('obliviousProofServerUrl')
+        }
+
         if (name === 'rpcUrl') {
           clearErrors('rpcUrl')
         }
@@ -607,7 +644,8 @@ const NetworkForm = ({
               'coingeckoPlatformId',
               'coingeckoNativeAssetId',
               'consensusRpcUrl',
-              'heliosCheckpoint'
+              'heliosCheckpoint',
+              'obliviousProofServerUrl'
             ].includes(key) && !formFields[key].length
         )
       } else {
@@ -644,7 +682,8 @@ const NetworkForm = ({
             rpcProvider: networkFormValues.rpcProvider,
             consensusRpcUrl: networkFormValues.consensusRpcUrl,
             heliosCheckpoint: networkFormValues.heliosCheckpoint,
-            proverRpcUrl: networkFormValues.proverRpcUrl
+            proverRpcUrl: networkFormValues.proverRpcUrl,
+            obliviousProofServerUrl: networkFormValues.obliviousProofServerUrl
           }
         })
       } else {
@@ -658,7 +697,8 @@ const NetworkForm = ({
               consensusRpcUrl: networkFormValues.consensusRpcUrl,
               rpcProvider: networkFormValues.rpcProvider,
               heliosCheckpoint: networkFormValues.heliosCheckpoint,
-              proverRpcUrl: networkFormValues.proverRpcUrl
+              proverRpcUrl: networkFormValues.proverRpcUrl,
+              obliviousProofServerUrl: networkFormValues.obliviousProofServerUrl
             },
             chainId: BigInt(networkFormValues.chainId)
           }
@@ -995,6 +1035,84 @@ const NetworkForm = ({
                     name="proverRpcUrl"
                   />
                 </View>
+              )}
+              {canUseOblivious && (
+                <>
+                  <Text
+                    appearance="secondaryText"
+                    fontSize={14}
+                    weight="regular"
+                    style={spacings.mbMi}
+                  >
+                    {t('Privacy overlay')}
+                  </Text>
+                  <View style={[styles.rpcUrlsContainer, spacings.mb]}>
+                    <Pressable
+                      style={[styles.selectRpcItem, { height: 40 }]}
+                      onPress={() => {
+                        const current = watch('obliviousProofServerUrl')
+                        if (current) {
+                          setValue('obliviousProofServerUrl', '', { shouldDirty: true })
+                        } else {
+                          setValue(
+                            'obliviousProofServerUrl',
+                            'http://127.0.0.1:8545',
+                            { shouldDirty: true }
+                          )
+                        }
+                      }}
+                    >
+                      <Checkbox
+                        value={!!watch('obliviousProofServerUrl')}
+                        onValueChange={(checked: boolean) => {
+                          if (checked) {
+                            setValue(
+                              'obliviousProofServerUrl',
+                              'http://127.0.0.1:8545',
+                              { shouldDirty: true }
+                            )
+                          } else {
+                            setValue('obliviousProofServerUrl', '', { shouldDirty: true })
+                          }
+                        }}
+                        style={spacings.mrTy}
+                      />
+                      <View>
+                        <Text fontSize={14} weight="medium" appearance="secondaryText">
+                          {t('Oblivious Proof Server (Privacy)')}
+                        </Text>
+                        <Text fontSize={11} appearance="secondaryText">
+                          {t(
+                            'State proofs fetched privately via TEE — the server cannot see your queries'
+                          )}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  </View>
+                  {!!watch('obliviousProofServerUrl') && (
+                    <Controller
+                      control={control}
+                      render={({
+                        field: { onChange, onBlur, value }
+                      }: ControllerRenderArgs) => (
+                        <Input
+                          onBlur={onBlur}
+                          onChangeText={onChange}
+                          value={value}
+                          inputWrapperStyle={{ height: 40 }}
+                          inputStyle={{ height: 40 }}
+                          containerStyle={{ ...spacings.mb, flex: 1 }}
+                          label={t('Oblivious Proof Server URL')}
+                          placeholder="http://127.0.0.1:8545"
+                          error={handleErrors(
+                            (errors as any).obliviousProofServerUrl
+                          )}
+                        />
+                      )}
+                      name="obliviousProofServerUrl"
+                    />
+                  )}
+                </>
               )}
               <View style={[flexbox.directionRow, flexbox.alignStart]}>
                 <Controller
