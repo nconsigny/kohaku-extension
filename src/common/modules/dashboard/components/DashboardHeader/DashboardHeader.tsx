@@ -12,6 +12,7 @@ import useSelectedAccountControllerState from '@web/hooks/useSelectedAccountCont
 import commonWebStyles from '@web/styles/utils/common'
 
 import AccountButton from './AccountButton'
+import TorButton from './TorButton'
 import getStyles from './styles'
 
 const DashboardHeader = () => {
@@ -35,18 +36,21 @@ const DashboardHeader = () => {
         style={[flexboxStyles.directionRow, flexboxStyles.flex1, flexboxStyles.justifySpaceBetween]}
       >
         <AccountButton />
-        <Pressable
-          testID="dashboard-home-btn"
-          style={[spacings.ml, spacings.phTy, spacings.pvTy, flexboxStyles.alignSelfCenter]}
-          onPress={() => navigate(WEB_ROUTES.mainDashboard)}
-          {...bindDashboardAnim}
-        >
-          <Animated.View style={dashboardAnimStyle}>
-            <Text fontSize={14} weight="medium" appearance="secondaryText">
-              Back To Dashboard
-            </Text>
-          </Animated.View>
-        </Pressable>
+        <View style={[flexboxStyles.directionRow, flexboxStyles.alignCenter]}>
+          <TorButton />
+          <Pressable
+            testID="dashboard-home-btn"
+            style={[spacings.ml, spacings.phTy, spacings.pvTy, flexboxStyles.alignSelfCenter]}
+            onPress={() => navigate(WEB_ROUTES.mainDashboard)}
+            {...bindDashboardAnim}
+          >
+            <Animated.View style={dashboardAnimStyle}>
+              <Text fontSize={14} weight="medium" appearance="secondaryText">
+                Back To Dashboard
+              </Text>
+            </Animated.View>
+          </Pressable>
+        </View>
       </View>
     </View>
   )

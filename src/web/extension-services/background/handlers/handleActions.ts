@@ -87,6 +87,23 @@ export const handleActions = async (
       }
       break
     }
+    case 'TOR_SET_ENABLED': {
+      const torServiceModule = await import('../tor/torService')
+      await torServiceModule.default.setEnabled(params.enabled)
+      pm.send('> ui', {
+        method: 'torStatus',
+        params: torServiceModule.default.getState()
+      })
+      break
+    }
+    case 'TOR_GET_STATUS': {
+      const torServiceModule = await import('../tor/torService')
+      pm.send('> ui', {
+        method: 'torStatus',
+        params: torServiceModule.default.getState()
+      })
+      break
+    }
     case 'PROVIDER_RPC_REQUEST': {
       const { requestId, chainId, method, params: rpcParams } = params
       const provider = mainCtrl.providers.providers[chainId.toString()]

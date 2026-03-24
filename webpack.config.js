@@ -217,6 +217,8 @@ module.exports = async function (env, argv) {
     stream: require.resolve('stream-browserify'),
     crypto: false,
     fs: false,
+    path: false,
+    os: false,
 
     // Added: explicitly avoid bundling Node's 'module' in web
     module: false,

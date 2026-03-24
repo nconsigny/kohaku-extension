@@ -89,6 +89,7 @@ import {
   setBackgroundUserContext
 } from './CrashAnalytics'
 import { handleDappAccountSwitching } from './handlers/handleDappAccountSwitching'
+import torService from './tor/torService'
 
 const debugLogs: {
   key: string
@@ -164,6 +165,15 @@ let walletStateCtrl: WalletStateController
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 handleRegisterScripts()
 handleKeepAlive()
+
+// Initialize Tor service (reads persisted toggle from storage)
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+torService.init()
+
+// Handle Tor keep-alive alarm to prevent service worker from killing the Tor circuit
+browser.alarms?.onAlarm?.addListener((alarm: any) => {
+  if (alarm.name === 'tor-keepalive') torService.keepAlive()
+})
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 providerRequestTransport.reply(async ({ method, id, params }, meta) => {
@@ -356,11 +366,9 @@ function getIntervalRefreshTime(constUpdateInterval: number, newestOpTimestamp: 
       }
     }
 
-    // Use the native fetch (instead of node-fetch or whatever else) since
-    // browser extensions are designed to run within the web environment,
-    // which already provides a native and well-optimized fetch API.
+    // Route through Tor when enabled, otherwise use native fetch.
     // @ts-ignore
-    return fetch(url, initWithCustomHeaders)
+    return torService.fetch(url.toString(), initWithCustomHeaders)
   }
 
   mainCtrl = new MainController({

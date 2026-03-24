@@ -9,6 +9,7 @@ import spacings, { SPACING_TY } from '@common/styles/spacings'
 import { BORDER_RADIUS_PRIMARY } from '@common/styles/utils/common'
 import flexbox from '@common/styles/utils/flexbox'
 import NetworkVerificationBadge from '@web/components/NetworkVerificationBadge'
+import TorButton from '@common/modules/dashboard/components/DashboardHeader/TorButton'
 
 const RED_ACCENT = '#D01C15'
 const RED_BG = '#D01C1520'
@@ -37,11 +38,12 @@ const HoldingsSection = ({
   return (
     <View style={[flexbox.alignCenter, spacings.pvLg]}>
       <View style={[flexbox.directionRow, flexbox.alignCenter, spacings.mbSm]}>
+        <TorButton />
         <Text
           type="caption"
           weight="medium"
           appearance="secondaryText"
-          style={{ letterSpacing: 2 }}
+          style={[spacings.mlTy, { letterSpacing: 2 }]}
         >
           TOTAL HOLDINGS
         </Text>

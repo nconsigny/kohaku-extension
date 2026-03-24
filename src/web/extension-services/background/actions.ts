@@ -264,6 +264,17 @@ type PortfolioControllerLoadAccountsTotalBalances = {
   }
 }
 
+type TorSetEnabledAction = {
+  type: 'TOR_SET_ENABLED'
+  params: {
+    enabled: boolean
+  }
+}
+
+type TorGetStatusAction = {
+  type: 'TOR_GET_STATUS'
+}
+
 type RequestsControllerAddUserRequestAction = {
   type: 'REQUESTS_CONTROLLER_ADD_USER_REQUEST'
   params: {
@@ -1204,4 +1215,6 @@ export type Action =
   | PrivacyPoolsV1ControllerHasUserProceededAction
   | PrivacyPoolsV1ControllerDestroyLatestBroadcastedAccountOpAction
   | PortfolioControllerLoadAccountsTotalBalances
+  | TorSetEnabledAction
+  | TorGetStatusAction
   | ProviderRpcRequestAction
