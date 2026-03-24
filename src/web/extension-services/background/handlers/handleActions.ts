@@ -569,6 +569,25 @@ export const handleActions = async (
     case 'MAIN_CONTROLLER_UPDATE_SELECTED_ACCOUNT_PORTFOLIO': {
       return await mainCtrl.updateSelectedAccountPortfolio(params)
     }
+    case 'PORTFOLIO_LOAD_ACCOUNTS_TOTAL_BALANCES': {
+      const { accountAddrs } = params
+      await Promise.all(
+        accountAddrs.map((addr: string) =>
+          mainCtrl.portfolio.updateSelectedAccount(addr).catch(() => {})
+        )
+      )
+      const balances: { [addr: string]: number } = {}
+      accountAddrs.forEach((addr: string) => {
+        const state = mainCtrl.portfolio.getLatestPortfolioState(addr)
+        let total = 0
+        Object.values(state).forEach((networkData: any) => {
+          total += networkData?.result?.total?.usd || 0
+        })
+        balances[addr] = total
+      })
+      pm.send('> ui', { method: 'accountTotalBalances', params: balances })
+      break
+    }
 
     case 'DEFI_CONTOLLER_ADD_SESSION': {
       mainCtrl.defiPositions.addSession(params.sessionId)
