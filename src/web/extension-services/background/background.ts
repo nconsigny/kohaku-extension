@@ -89,7 +89,6 @@ import {
   setBackgroundUserContext
 } from './CrashAnalytics'
 import { handleDappAccountSwitching } from './handlers/handleDappAccountSwitching'
-import { getEthUsdPrice } from '@web/libs/eth-prices/ethPriceProvider'
 
 const debugLogs: {
   key: string
@@ -362,6 +361,7 @@ function getIntervalRefreshTime(constUpdateInterval: number, newestOpTimestamp: 
     const urlStr = url.toString()
     if (urlStr.includes('cena.ambire.com/api/v3/simple/price')) {
       try {
+        const { getEthUsdPrice } = await import('@web/libs/eth-prices/ethPriceProvider')
         const ethPrice = await getEthUsdPrice()
         const params = new URL(urlStr).searchParams
         const currencies = (params.get('vs_currencies') || 'usd').split(',')
