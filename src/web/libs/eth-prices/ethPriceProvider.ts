@@ -4,7 +4,6 @@
  * Fetches the ETH price from the mainnet Uniswap V3 WETH/USDC pool on-chain,
  * then applies it as the ETH price for all networks (testnet PoC).
  */
-import { createQuoter, Quoter } from './eth_prices'
 
 // Mainnet Uniswap V3 WETH/USDC 0.05% pool
 const WETH = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
@@ -18,16 +17,35 @@ const MAINNET_RPC = 'https://eth.llamarpc.com'
 let cachedPrice: { usd: number; fetchedAt: number } | null = null
 const CACHE_TTL_MS = 60_000 // 1 minute
 
-let quoterPromise: Promise<Quoter> | null = null
+let quoterPromise: Promise<any> | null = null
 
-async function getQuoter(): Promise<Quoter> {
+async function initWasm() {
+  // Dynamic imports so WASM loads lazily
+  const wasmModule = await import('./eth_prices_bg.wasm')
+  const bg = await import('./eth_prices_bg.js')
+
+  // Wire WASM exports into the bg.js glue code
+  bg.__wbg_set_wasm(wasmModule)
+
+  // Init the externref table if available
+  if (typeof bg.__wbindgen_init_externref_table === 'function') {
+    bg.__wbindgen_init_externref_table()
+  }
+
+  return bg
+}
+
+async function getQuoter(): Promise<any> {
   if (!quoterPromise) {
-    quoterPromise = createQuoter({
-      rpcUrl: MAINNET_RPC,
-      quoters: {
-        uniswap_v3: [{ pool_address: UNISWAP_V3_WETH_USDC_POOL }]
-      }
-    })
+    quoterPromise = (async () => {
+      const bg = await initWasm()
+      return bg.createQuoter({
+        rpcUrl: MAINNET_RPC,
+        quoters: {
+          uniswap_v3: [{ pool_address: UNISWAP_V3_WETH_USDC_POOL }]
+        }
+      })
+    })()
   }
   return quoterPromise
 }
