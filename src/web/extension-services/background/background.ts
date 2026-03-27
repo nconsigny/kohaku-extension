@@ -357,10 +357,10 @@ function getIntervalRefreshTime(constUpdateInterval: number, newestOpTimestamp: 
       }
     }
 
-    // Intercept Cena/CoinGecko price requests and use on-chain Uniswap V3 prices
-    // for ETH instead of the centralized API (decentralized price PoC).
+    // Intercept ALL Cena/CoinGecko price requests and use on-chain Uniswap V3
+    // prices instead. No centralized API fallback — fully trustless.
     const urlStr = url.toString()
-    if (urlStr.includes('cena.ambire.com/api/v3/simple/price') && urlStr.includes('ethereum')) {
+    if (urlStr.includes('cena.ambire.com/api/v3/simple/price')) {
       try {
         const ethPrice = await getEthUsdPrice()
         const params = new URL(urlStr).searchParams
@@ -370,6 +370,7 @@ function getIntervalRefreshTime(constUpdateInterval: number, newestOpTimestamp: 
         for (const id of ids) {
           body[id] = {}
           for (const cur of currencies) {
+            // PoC: use ETH price for all native assets
             body[id][cur] = cur === 'usd' ? ethPrice : 0
           }
         }
@@ -378,8 +379,19 @@ function getIntervalRefreshTime(constUpdateInterval: number, newestOpTimestamp: 
           headers: { 'Content-Type': 'application/json' }
         })
       } catch (e) {
-        console.warn('[eth-prices] On-chain price fetch failed, falling back to Cena:', e)
+        console.error('[eth-prices] On-chain price read failed:', e)
+        return new Response(JSON.stringify({ error: 'On-chain price read failed' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' }
+        })
       }
+    }
+    // Block token_price Cena requests too — no centralized API calls for prices
+    if (urlStr.includes('cena.ambire.com/api/v3/simple/token_price')) {
+      return new Response(JSON.stringify({}), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
 
     // @ts-ignore

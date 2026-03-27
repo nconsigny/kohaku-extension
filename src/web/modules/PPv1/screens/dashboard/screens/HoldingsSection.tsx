@@ -59,21 +59,23 @@ const HoldingsSection = ({
           </Text>
         )}
       </View>
-      {isPrivateLoading && (
-        <View style={[flexbox.directionRow, flexbox.alignCenter, spacings.mtTy]}>
-          <Spinner variant="white" style={{ width: 18, height: 18 }} />
-          <View style={[{ width: SPACING_TY }]} />
-          <Text type="caption" weight="regular" appearance="secondaryText">
-            Loading Private Account
-          </Text>
-        </View>
-      )}
-      {isLoadingPublicBalances && (
-        <View style={[flexbox.directionRow, flexbox.alignCenter, spacings.mtTy]}>
-          <Spinner variant="white" style={{ width: 18, height: 18 }} />
-          <View style={[{ width: SPACING_TY }]} />
-          <Text type="caption" weight="regular" appearance="secondaryText">
-            Loading Public Accounts
+      {(isPrivateLoading || isLoadingPublicBalances) && (
+        <View style={[flexbox.alignCenter, spacings.mtTy]}>
+          <View style={[flexbox.directionRow, flexbox.alignCenter]}>
+            <Spinner variant="white" style={{ width: 18, height: 18 }} />
+            <View style={[{ width: SPACING_TY }]} />
+            <Text type="caption" weight="regular" appearance="secondaryText">
+              {isPrivateLoading ? 'Loading Private Account' : 'Loading Public Accounts'}
+            </Text>
+          </View>
+          <Text
+            type="caption"
+            weight="regular"
+            fontSize={10}
+            style={[spacings.mtXs, { opacity: 0.6, textAlign: 'center', fontStyle: 'italic' }]}
+            appearance="secondaryText"
+          >
+            Prices read on-chain, no API. This wait is the price for being trustless.
           </Text>
         </View>
       )}
