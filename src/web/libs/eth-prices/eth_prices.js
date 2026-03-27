@@ -1,13 +1,14 @@
 /* @ts-self-types="./eth_prices.d.ts" */
 
-import init from "./eth_prices_bg.wasm";
 import * as bg from "./eth_prices_bg.js";
 
 let initialized = false;
 
 async function ensureInit() {
   if (initialized) return;
-  const wasm = await init({ "./eth_prices_bg.js": bg });
+  // webpack asyncWebAssembly handles instantiation — import the module
+  // which resolves to the WASM exports object
+  const wasm = await import("./eth_prices_bg.wasm");
   bg.__wbg_set_wasm(wasm);
   bg.__wbindgen_init_externref_table();
   initialized = true;
