@@ -1,80 +1,68 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import useBackgroundService from '@web/hooks/useBackgroundService'
-import eventBus from '@web/extension-services/event/eventBus'
+import { useOnChainPrices } from '@web/contexts/onChainPricesContext/onChainPricesContext'
+import { fetchOnChainPortfolio } from '@web/libs/onchain-prices'
+
+const SEPOLIA_CHAIN_ID = 11155111
 
 const usePublicBalanceCache = ({
   accounts,
-  accountAddr,
-  portfolioIsAllReady,
-  portfolioTotalBalance
+  accountAddr
 }: {
   accounts: { addr: string }[]
   accountAddr: string | undefined
-  portfolioIsAllReady: boolean | undefined
-  portfolioTotalBalance: number | null | undefined
+  portfolioIsAllReady?: boolean | undefined
+  portfolioTotalBalance?: number | null | undefined
 }) => {
-  const { dispatch } = useBackgroundService()
+  const { isLoading: pricesLoading } = useOnChainPrices()
   const [balanceCache, setBalanceCache] = useState<{ [addr: string]: number }>({})
   const [isLoadingPublicBalances, setIsLoadingPublicBalances] = useState(true)
-  const hasRequestedRef = useRef(false)
+  const isFetchingRef = useRef(false)
 
-  // Always keep the current account's balance up to date from its live portfolio
-  useEffect(() => {
-    if (accountAddr && portfolioIsAllReady && portfolioTotalBalance != null) {
-      setBalanceCache((prev) => {
-        if (prev[accountAddr] === portfolioTotalBalance) return prev
-        return { ...prev, [accountAddr]: portfolioTotalBalance }
-      })
-    }
-  }, [accountAddr, portfolioIsAllReady, portfolioTotalBalance])
+  const fetchAllBalances = useCallback(async () => {
+    if (!accounts.length || !accountAddr || isFetchingRef.current || pricesLoading) return
+    isFetchingRef.current = true
 
-  // On mount, request all account balances in parallel
-  useEffect(() => {
-    if (!accounts.length || !accountAddr || hasRequestedRef.current) return
+    try {
+      // Fetch portfolio for all accounts in parallel using on-chain reads
+      const results = await Promise.all(
+        accounts.map(async (acct) => {
+          try {
+            const portfolio = await fetchOnChainPortfolio(acct.addr, SEPOLIA_CHAIN_ID)
+            // eslint-disable-next-line no-console
+            console.log(`[usePublicBalanceCache] ${acct.addr}: $${portfolio.totalUsdValue} | ${portfolio.tokens.map((t) => `${t.symbol}:bal=${t.formattedBalance},price=$${t.usdPrice},val=$${t.usdValue}`).join(' | ')}`)
+            return { addr: acct.addr, balance: portfolio.totalUsdValue }
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error(`[usePublicBalanceCache] Failed for ${acct.addr}:`, err)
+            return { addr: acct.addr, balance: 0 }
+          }
+        })
+      )
 
-    hasRequestedRef.current = true
-    const otherAddrs = accounts.map((a) => a.addr).filter((addr) => addr !== accountAddr)
+      const newCache: { [addr: string]: number } = {}
+      for (const r of results) {
+        newCache[r.addr] = r.balance
+      }
 
-    if (!otherAddrs.length) {
+      setBalanceCache(newCache)
       setIsLoadingPublicBalances(false)
-      return
-    }
-
-    dispatch({
-      type: 'PORTFOLIO_LOAD_ACCOUNTS_TOTAL_BALANCES',
-      params: { accountAddrs: otherAddrs }
-    })
-  }, [accounts, accountAddr, dispatch])
-
-  // Listen for the parallel-loaded results from the background
-  useEffect(() => {
-    const handler = (balances: { [addr: string]: number }) => {
-      setBalanceCache((prev) => ({ ...prev, ...balances }))
+    } catch {
       setIsLoadingPublicBalances(false)
+    } finally {
+      isFetchingRef.current = false
     }
+  }, [accounts, accountAddr, pricesLoading])
 
-    eventBus.addEventListener('accountTotalBalances', handler)
-    return () => eventBus.removeEventListener('accountTotalBalances', handler)
-  }, [])
+  useEffect(() => {
+    fetchAllBalances()
+  }, [fetchAllBalances])
 
   const refreshPublicBalances = useCallback(() => {
-    if (!accounts.length || !accountAddr) return
-    setBalanceCache((prev) => ({ [accountAddr]: prev[accountAddr] }))
     setIsLoadingPublicBalances(true)
-    hasRequestedRef.current = false
-
-    const otherAddrs = accounts.map((a) => a.addr).filter((addr) => addr !== accountAddr)
-    if (!otherAddrs.length) {
-      setIsLoadingPublicBalances(false)
-      return
-    }
-
-    dispatch({
-      type: 'PORTFOLIO_LOAD_ACCOUNTS_TOTAL_BALANCES',
-      params: { accountAddrs: otherAddrs }
-    })
-  }, [accounts, accountAddr, dispatch])
+    isFetchingRef.current = false
+    fetchAllBalances()
+  }, [fetchAllBalances])
 
   return { balanceCache, isLoadingPublicBalances, refreshPublicBalances }
 }

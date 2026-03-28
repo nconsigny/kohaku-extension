@@ -6,6 +6,7 @@ import { ZERO_ADDRESS } from '@ambire-common/services/socket/constants'
 import { Call } from '@ambire-common/libs/accountOp/types'
 import { randomId } from '@ambire-common/libs/humanizer/utils'
 import { PINNED_TOKENS } from '@ambire-common/consts/pinnedTokens'
+import { useOnChainPrices } from '@web/contexts/onChainPricesContext/onChainPricesContext'
 import useBackgroundService from '@web/hooks/useBackgroundService'
 import useRailgunControllerState from '@web/hooks/useRailgunControllerState'
 import useSelectedAccountControllerState from '@web/hooks/useSelectedAccountControllerState'
@@ -53,10 +54,17 @@ const useRailgunForm = () => {
   const { account: userAccount, portfolio } = useSelectedAccountControllerState()
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  const { getEthPrice: getOnChainEthPrice } = useOnChainPrices()
+
   const ethPrice = chainId
-    ? portfolio.tokens
-        .find((token) => token.chainId === BigInt(chainId) && token.name === 'Ether')
-        ?.priceIn.find((price) => price.baseCurrency === 'usd')?.price
+    ? (() => {
+        const onChainPrice = getOnChainEthPrice(Number(chainId))
+        if (onChainPrice == null) {
+          // eslint-disable-next-line no-console
+          console.error(`[onchain-prices] ETH price unavailable from Uniswap V3 on chain ${chainId}`)
+        }
+        return onChainPrice ?? undefined
+      })()
     : undefined
 
   const totalApprovedBalance = useMemo(() => {

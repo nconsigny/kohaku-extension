@@ -20,6 +20,7 @@ import { ZERO_ADDRESS } from '@ambire-common/services/socket/constants'
 import { PrivacyProtocolType } from '@web/modules/PPv1/types/privacy'
 import { toHex } from 'viem'
 
+import { useOnChainPrices } from '@web/contexts/onChainPricesContext/onChainPricesContext'
 import { usePrivacyPoolsDepositForm } from '@web/hooks/useDepositForm'
 import useSelectedAccountControllerState from '@web/hooks/useSelectedAccountControllerState'
 import DashboardPageScrollContainer from '../DashboardPageScrollContainer'
@@ -63,9 +64,12 @@ const Tokens = ({
 
   const searchValue = watch('search')
 
-  const { ethPrice, totalApprovedBalance, isAccountLoaded, isReadyToLoad } =
+  const { totalApprovedBalance, isAccountLoaded, isReadyToLoad } =
     usePrivacyPoolsDepositForm()
   const { portfolio } = useSelectedAccountControllerState()
+  const { getEthPrice } = useOnChainPrices()
+  // On-chain ETH price from Uniswap V3 (Sepolia resolves to mainnet via TESTNET_TO_MAINNET)
+  const onChainEthPrice = getEthPrice(11155111)
   const { isAccountLoaded: railgunIsAccountLoaded, totalPrivateBalancesFormatted } =
     useRailgunForm()
   const { defaultRailgunKeys } = useRailgunControllerState()
@@ -111,7 +115,7 @@ const Tokens = ({
             {
               baseCurrency: 'usd',
               price: isNative
-                ? ethPrice
+                ? onChainEthPrice
                 : portfolioToken?.priceIn.find((p) => p.baseCurrency === 'usd')?.price
             }
           ],
@@ -142,7 +146,7 @@ const Tokens = ({
           priceIn: [
             {
               baseCurrency: 'usd',
-              price: tokenAddress === ZERO_ADDRESS ? ethPrice : tokenInfo.price
+              price: tokenAddress === ZERO_ADDRESS ? onChainEthPrice : tokenInfo.price
             }
           ],
           flags: {
@@ -160,7 +164,7 @@ const Tokens = ({
     })
 
     return tokens
-  }, [totalApprovedBalance, totalPrivateBalancesFormatted, ethPrice, portfolio?.tokens])
+  }, [totalApprovedBalance, totalPrivateBalancesFormatted, onChainEthPrice, portfolio?.tokens])
 
   const filteredTokens = useMemo(() => {
     if (!searchValue) return privateTokens

@@ -88,9 +88,7 @@ const KohakuDashboardScreen = () => {
 
   const { balanceCache, isLoadingPublicBalances, refreshPublicBalances } = usePublicBalanceCache({
     accounts,
-    accountAddr: account?.addr,
-    portfolioIsAllReady: portfolio?.isAllReady,
-    portfolioTotalBalance: portfolio?.totalBalance
+    accountAddr: account?.addr
   })
 
   const handleRefreshAll = useCallback(() => {

@@ -17,6 +17,7 @@ import { getTokenAmount } from '@ambire-common/libs/portfolio/helpers'
 import { INote } from '@ambire-common/controllers/privacyPools/privacyPoolsV1'
 import { AddressState, AddressStateOptional } from '@ambire-common/interfaces/domains'
 import useAddressInput from '@common/hooks/useAddressInput'
+import { useOnChainPrices } from '@web/contexts/onChainPricesContext/onChainPricesContext'
 import useBackgroundService from './useBackgroundService'
 import useRailgunControllerState from './useRailgunControllerState'
 import usePrivacyPools from './usePrivacyPools/usePrivacyPools'
@@ -118,11 +119,16 @@ export const usePrivacyPoolsDepositForm = () => {
     [setAddressState]
   )
 
+  const { getEthPrice: getOnChainEthPrice } = useOnChainPrices()
+
   const ethPrice = useMemo(() => {
-    return portfolio.tokens
-      .find((token) => token.name === 'Ether')
-      ?.priceIn.find((price) => price.baseCurrency === 'usd')?.price
-  }, [portfolio.tokens])
+    const onChainPrice = getOnChainEthPrice(1)
+    if (onChainPrice == null) {
+      // eslint-disable-next-line no-console
+      console.error('[onchain-prices] ETH price unavailable from Uniswap V3 on chain 1')
+    }
+    return onChainPrice ?? undefined
+  }, [getOnChainEthPrice])
 
   const totalApprovedBalance = useMemo(() => {
     const total = approvedNotes.reduce((sum: bigint, b: INote) => sum + b.balance, 0n)

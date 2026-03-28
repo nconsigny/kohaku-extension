@@ -6,6 +6,7 @@ import { Hash, Secret, type Withdrawal } from '@0xbow/privacy-pools-core-sdk'
 import { Call } from '@ambire-common/libs/accountOp/types'
 import { BatchWithdrawalParams } from '@ambire-common/controllers/privacyPools/privacyPools'
 import { ReviewStatus } from '@web/contexts/privacyPoolsControllerStateContext'
+import { useOnChainPrices } from '@web/contexts/onChainPricesContext/onChainPricesContext'
 import useBackgroundService from '@web/hooks/useBackgroundService'
 import usePrivacyPoolsControllerState from '@web/hooks/usePrivacyPoolsControllerState'
 import useSelectedAccountControllerState from '@web/hooks/useSelectedAccountControllerState'
@@ -69,9 +70,16 @@ const usePrivacyPoolsForm = () => {
     return [...poolAccounts, ...importedPrivateAccounts.flat()]
   }, [poolAccounts, importedPrivateAccounts])
 
-  const ethPrice = portfolio.tokens
-    .find((token) => token.chainId === BigInt(chainId) && token.name === 'Ether')
-    ?.priceIn.find((price) => price.baseCurrency === 'usd')?.price
+  const { getEthPrice: getOnChainEthPrice } = useOnChainPrices()
+
+  const ethPrice = (() => {
+    const onChainPrice = getOnChainEthPrice(Number(chainId))
+    if (onChainPrice == null) {
+      // eslint-disable-next-line no-console
+      console.error(`[onchain-prices] ETH price unavailable from Uniswap V3 on chain ${chainId}`)
+    }
+    return onChainPrice ?? undefined
+  })()
 
   const poolInfo = chainData?.[chainId]?.poolInfo?.[0]
 

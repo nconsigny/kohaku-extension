@@ -49,6 +49,7 @@ import { TransferControllerStateProvider } from '@web/contexts/transferControlle
 import { WalletStateControllerProvider } from '@web/contexts/walletStateControllerContext'
 import { RailgunControllerStateProvider } from '@web/contexts/railgunControllerStateContext'
 import { PrivacyPoolsV1ControllerStateProvider } from '@web/contexts/privacyPoolsV1ControllerStateContext/privacyPoolsV1ControllerStateContext'
+import { OnChainPricesProvider } from '@web/contexts/onChainPricesContext/onChainPricesContext'
 
 const Router = isExtension ? HashRouter : BrowserRouter
 
@@ -98,6 +99,7 @@ const AppInit = () => {
                                                                           {/* Reading from controllers in components, rendered above ControllersStateLoadedProvider
                                                                     must be done very carefully, as it is not guaranteed that the state is loaded */}
                                                                           <ControllersStateLoadedProvider>
+                                                                          <OnChainPricesProvider>
                                                                             <StorageProvider>
                                                                               <KeyboardProvider>
                                                                                 <NetInfoProvider>
@@ -112,6 +114,7 @@ const AppInit = () => {
                                                                                 </NetInfoProvider>
                                                                               </KeyboardProvider>
                                                                             </StorageProvider>
+                                                                          </OnChainPricesProvider>
                                                                           </ControllersStateLoadedProvider>
                                                                         </RailgunControllerStateProvider>
                                                                       </PrivacyPoolsV1ControllerStateProvider>
