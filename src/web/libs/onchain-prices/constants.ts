@@ -10,7 +10,7 @@ export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as cons
 // USDT addresses per chain — used to price USDC (the quote currency) via USDC/USDT pools
 export const USDT_ADDRESSES: Record<number, { address: `0x${string}`; decimals: number }> = {
   1: { address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals: 6 },
-  8453: { address: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2', decimals: 6 },
+
   42161: { address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', decimals: 6 },
   10: { address: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58', decimals: 6 }
 }
@@ -125,46 +125,6 @@ export const CHAIN_CONFIGS: ChainPriceConfig[] = [
       }
     ]
   },
-  // Base
-  {
-    chainId: 8453,
-    factoryAddress: '0x33128a8fC17869897dcE68Ed026d694621f6FDfD',
-    usdcAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-    usdcDecimals: 6,
-    wethAddress: '0x4200000000000000000000000000000000000006',
-    tokens: [
-      {
-        tokenAddress: '0x4200000000000000000000000000000000000006',
-        decimals: 18,
-        symbol: 'ETH',
-        poolFee: 500
-      },
-      {
-        tokenAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-        decimals: 6,
-        symbol: 'USDC',
-        poolFee: 0
-      },
-      {
-        tokenAddress: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
-        decimals: 18,
-        symbol: 'DAI',
-        poolFee: 0
-      },
-      {
-        tokenAddress: '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA',
-        decimals: 6,
-        symbol: 'USDbC',
-        poolFee: 0
-      },
-      {
-        tokenAddress: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22',
-        decimals: 18,
-        symbol: 'cbETH',
-        poolFee: 3000
-      }
-    ]
-  },
   // Arbitrum
   {
     chainId: 42161,
@@ -262,7 +222,7 @@ export const CHAIN_CONFIGS: ChainPriceConfig[] = [
 // Public fallback RPCs - used when the extension's configured RPC is unavailable
 export const FALLBACK_RPCS: Record<number, string> = {
   1: 'https://ethereum-rpc.publicnode.com',
-  8453: 'https://base-rpc.publicnode.com',
+
   42161: 'https://arbitrum-one-rpc.publicnode.com',
   10: 'https://optimism-rpc.publicnode.com',
   11155111: 'https://ethereum-sepolia-rpc.publicnode.com'

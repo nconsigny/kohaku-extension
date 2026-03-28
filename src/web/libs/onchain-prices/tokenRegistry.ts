@@ -222,18 +222,6 @@ const ETHEREUM_TOKENS: TokenEntry[] = [
 ]
 
 // ---------------------------------------------------------------------------
-// Base (chainId: 8453)
-// ---------------------------------------------------------------------------
-const BASE_TOKENS: TokenEntry[] = [
-  { symbol: 'ETH', name: 'Ethereum', address: 'native', decimals: 18, wrappedAddress: '0x4200000000000000000000000000000000000006', poolFee: 500 },
-  { symbol: 'USDC', name: 'USD Coin', address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', decimals: 6, poolFee: 0 },
-  { symbol: 'WETH', name: 'Wrapped Ether', address: '0x4200000000000000000000000000000000000006', decimals: 18, poolFee: 500 },
-  { symbol: 'DAI', name: 'Dai Stablecoin', address: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', decimals: 18, poolFee: 100 },
-  { symbol: 'USDbC', name: 'USD Base Coin', address: '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA', decimals: 6, poolFee: 0 },
-  { symbol: 'cbETH', name: 'Coinbase Wrapped Staked ETH', address: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22', decimals: 18, poolFee: 3000 }
-]
-
-// ---------------------------------------------------------------------------
 // Arbitrum One (chainId: 42161)
 // ---------------------------------------------------------------------------
 const ARBITRUM_TOKENS: TokenEntry[] = [
@@ -276,7 +264,6 @@ const SEPOLIA_TOKENS: TokenEntry[] = [
 
 export const TOKEN_REGISTRY: Record<number, TokenEntry[]> = {
   1: ETHEREUM_TOKENS,
-  8453: BASE_TOKENS,
   42161: ARBITRUM_TOKENS,
   10: OPTIMISM_TOKENS,
   11155111: SEPOLIA_TOKENS

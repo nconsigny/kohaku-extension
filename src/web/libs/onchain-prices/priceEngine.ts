@@ -1,5 +1,5 @@
 import { createPublicClient, http, type PublicClient, type Chain } from 'viem'
-import { mainnet, base, arbitrum, optimism } from 'viem/chains'
+import { mainnet, arbitrum, optimism } from 'viem/chains'
 
 import {
   UNISWAP_V3_FACTORY_ABI,
@@ -22,7 +22,7 @@ import type {
 
 const VIEM_CHAINS: Record<number, Chain> = {
   1: mainnet,
-  8453: base,
+
   42161: arbitrum,
   10: optimism
 }

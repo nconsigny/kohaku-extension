@@ -1,5 +1,5 @@
 import { createPublicClient, http, erc20Abi, formatUnits, type PublicClient, type Chain } from 'viem'
-import { mainnet, base, arbitrum, optimism, sepolia } from 'viem/chains'
+import { mainnet, arbitrum, optimism, sepolia } from 'viem/chains'
 
 import { getTokensForChain, type TokenEntry } from './tokenRegistry'
 import { FALLBACK_RPCS, TESTNET_TO_MAINNET } from './constants'
@@ -7,7 +7,7 @@ import { getCachedTokenPrice, getNativeTokenPrice, fetchPricesForChain } from '.
 
 const VIEM_CHAINS: Record<number, Chain> = {
   1: mainnet,
-  8453: base,
+
   42161: arbitrum,
   10: optimism,
   11155111: sepolia
